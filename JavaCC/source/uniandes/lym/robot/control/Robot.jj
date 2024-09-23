@@ -6,7 +6,8 @@ Modificado por: Juan Pablo Morales.
 Agregadas producciones para manejar globos
 Modificado por Silvia Takahashi
 
-Juan Galan estuvo aqui aaaa aaa
+Juan Galan
+Camilo Rey
  **/
 
 
@@ -31,11 +32,14 @@ import java.awt.Point;
 import java.io.*;
 import java.util.Vector;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
 @SuppressWarnings("serial")
 public class Robot 
 {
-
+	ArrayList <String> variables = new ArrayList <String> ();
+    ArrayList <String> funciones = new ArrayList <String> ();
+ 	ArrayList <String> funciones_parametros = new ArrayList <String> ();
 
 	private RobotWorldDec world;
 	
@@ -56,26 +60,97 @@ SKIP:
 	| "\n"
 }
 
+TOKEN: {
+  < EXEC:"EXEC" >
+| < NEW:"new" >
+}
+
+TOKEN: {
+  < VAR:"var" >
+| < MACRO:"macro" >
+| < IGUAL:"=" >
+}
+
+TOKEN: {
+  < LBRACKET:"{" >
+| < RBRACKET:"}" >
+| < LPARENTESIS:"(" >
+| < RPARENTESIS:")">
+| < COMMA:"," > }
+
+TOKEN: {
+  < RIGHT:"RIGHT" >
+| < LEFT:"LEFT" >
+| < BACK:"BACK" >
+| < NORTH:"NORTH" >
+| < SOUTH:"SOUTH" >
+| < EAST:"EAST" >
+| < WEST:"WEST" >
+| < FORWARD:"FORWARD" >
+| < BACKWARD:"BACKWARD" >
+	}
+
 TOKEN: /* Nombres de Comandos */
 {
 
-			<MOV:  "Mov">
-		| 	<RIGHT: "RIGHT">
-		| 	<PUT: "Put">
-		| 	<PICK: "Pick">
+			<TURNTOMY:  "turnToMy">
+		| 	<TURNTOTHE: "turnToThe">
+		| 	<WALK: "WALK">
+		| 	<JUMP: "JUMP">
 		|  < POP: "Pop" >
-		|  <GO: "GO" >
-        |  < HOP:  "HOP" >		
+		|  <DROP: "DROP" >
+        |  < PICK:  "PICK" >
+        | < GRAB:"GRAB" >
+        | < LETGO:"letGo" >
+        | < MOVES:"MOVES">
+        | < NOP:"NOP" >
+        | < SAFEEXE:"safeExe" >	
 
 }
 
 TOKEN:
 {
-		<BALLOONS:  "BALLOONS" >
-		|	<CHIPS:     "CHIPS"  >	
+		<BALLOONS:  "myBALLOONS" >
+		| <CHIPS:  "mYCHIPS"  >
+		| <SIZE:"SIZE" >
+		| < MYX:"MYX" >
+		| < MYY:"MYY" >
+		| < BALLONSHERE:"ballonsHere" >
+		| < CHIPSHERE:"chipsHere" >
+		| < ROOM:"roomForChips" >
 
 }
 
+TOKEN:
+{
+  < IF:"IF" >
+| < THEN:"THEN" >
+| < ELSE:"ELSE" >
+| < FI:"FI" >
+| < DO:"DO" >
+| < OD:"OD" >
+| < REP:"REP" >
+| < TIMES:"TIMES" >
+| < PER:"PER" >
+}
+
+TOKEN:
+{
+  < BLOCKED:"isBlocked?" >
+| < FACING:"isFacing?" >
+| < ZERO:"zero?" >
+| < NOT:"NOT" >
+}
+
+TOKEN: {
+  < SEMICOLON:";" >
+}
+
+TOKEN :
+{
+  < LETTERS : (<LETTER>)+ >
+| < #LETTER : ["a"-"z", "A"-"Z"] > 
+}
 
 
 TOKEN :
@@ -85,26 +160,43 @@ TOKEN :
         
 }
 
-
+//PARSER
+void variable_definition() :
+{
+  Token variableName;
+}
+{
+  < NEW > < VAR > variableName = < LETTERS > < NUM >
+  {
+    //variables.add(variableName.image);
+    System.out.println("Variable definida: " + variableName.image);
+  }
+}
 
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
+	
 	boolean command(Console sistema):
 	{	
 		
 		int x,y;
+		Token variableName=null;
 		salida=new String();	
 	}
 
 	
 	{
 		(		  (
-		   <RIGHT> "(" ")" {world.turnRight();salida = "Command: Turnright";}
-		| 	<MOV>  "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward ";}  
-		| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
+		   <WALK> "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward";}
+		| 	<TURNTOMY>  "("(
+			< RIGHT > { world.turnRight();salida = "Command: right ";}  
+	    | < BACK > { world.turnRight(); world.turnRight();salida = "Command: right ";} 
+		  ) ")"
+				 
+		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
 		|  <PUT> "("  put() ")"					  			
 		|  <PICK> "(" get()  ")"	
-	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}
+	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}*/
 		) ";" 
 
 		{
