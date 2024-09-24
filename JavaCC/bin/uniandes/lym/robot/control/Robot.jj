@@ -316,7 +316,7 @@ void jump() :
     )
     ")" 
     {
-        world.moveForward(x, false);  // TODO: Averiguar como hacer el jump
+        world.moveForward(x, true);  // TODO: Averiguar como hacer el jump
         salida = "Command: jump forward " + x;
         System.out.println(salida);
     }
@@ -457,6 +457,97 @@ void pop() :
     }
 }
 
+void moves() :
+{
+    Token direction;
+}
+{
+    <MOVES> "("
+    // Handle the first direction (required)
+    direction = move_direction()
+    {
+        salida = "Command: Move " + direction.image;
+        System.out.println(salida);
+    } //TODO Hacer que funcione mas del primer elemento de la secuencia
+    // Handle any subsequent directions (optional, separated by commas)
+    ( "," direction = move_direction()
+    {
+        salida = "Command: Move " + direction.image;
+        System.out.println(salida);
+    } )*
+    ")"
+}
+
+Token move_direction() :
+{
+    Token t = null;
+}
+{
+    t = <RIGHT> { world.right(); } 
+    | <LEFT> { world.left(); }
+    | <BACKWARD> { world.down(); } 
+    | <FORWARD> { world.up(); }
+    { return t; } // Ensures that t is always returned
+}
+
+void safeexe():
+{
+}
+{
+  < SAFEEXE > "(" sequence() ")"
+}
+
+// Values
+
+void size():
+{ int dim;
+}
+{
+    < SIZE > { dim=world.getN(); System.out.println(dim);} //TODO: Ver como se puede hacer que depende da ROBOTWORLD
+    
+}
+
+void myx():
+{Point x;
+}
+{
+  < MYX > {x=world.getPosition();System.out.println(x.x); }
+}
+
+void myy():
+{Point y;
+}
+{
+  < MYY > {y=world.getPosition();System.out.println(y.y); }
+}
+
+
+void sequence() :
+{
+}
+{
+	(caminar()
+		| variable_definition()
+		| turn_To_My()
+		| turn_To_The()
+		| jump()
+		| drop()
+		| pick()
+		| grab()
+		| letgo()
+		| pop()
+		| < NOP >
+		| moves()
+		| safeexe()
+		| size()
+		| myx()
+		| myy()
+  )+
+}
+
+
+
+
 
 //Hacer un void con todos los ejecutables para determinar donde va el EXEC
 	boolean command(Console sistema): //Aqui toca meter todos los voids, y los exec donde toque
@@ -479,6 +570,12 @@ void pop() :
 		| grab()
 		| letgo()
 		| pop()
+		| < NOP >
+		| moves()
+		| safeexe()
+		| size()
+		| myx()
+		| myy()
 				 
 		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
@@ -501,25 +598,6 @@ void pop() :
     	| <EOF> {return false;} 
 	}
 
-	void put() :
-	{
-		int f=1;	
-	}
-	{
-		( <CHIPS>    "," f=num() {world.putChips(f); salida = "Command:  Put Chips"; })
-		|  	  ( <BALLOONS>   "," f=num() {world.putBalloons(f); salida = "Command:  Put Balloons";})	 
-
-	}
-
-	void get() :
-	{
-		int f=1;	
-	}
-	{
-		( <CHIPS>   "," f=num() {world.pickChips(f);salida = "Command:  Pick chips";})
-		|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
-
-	}
 
 	
 	
