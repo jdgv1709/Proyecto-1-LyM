@@ -630,13 +630,28 @@ boolean checkZero() :
             }
         }
     )")"
+    { System.out.println(value == 0); }
     {
         // Check if the value is zero and return true or false
         return value == 0;
     }
 }
-//TODO: not condition
 
+boolean not() :
+{
+    boolean result;
+}
+{ < NOT >
+    "(" (result = isfacing()
+  | result=checkZero() //TODO: Agregar isblocking
+  | result=not()) ")" 
+    { System.out.println(!result + " :Resultado Final");}
+    {
+        return !result; // Negate the result of conditions() and return it
+    }
+    
+}
+//TODO: eSTRUCTURAS DE CONTROL + FUNCIONES
 void sequence() : //Ejecutables: usar para def funciones, repeat
 {
 }
@@ -701,8 +716,7 @@ void sequence() : //Ejecutables: usar para def funciones, repeat
 		| balloonshere()
 		| chipshere()
 		| room()
-		| isfacing()
-		| checkZero()
+		| not()
 				 
 		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
