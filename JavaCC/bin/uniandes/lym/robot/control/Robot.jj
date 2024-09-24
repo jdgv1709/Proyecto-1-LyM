@@ -33,11 +33,16 @@ import java.io.*;
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+
 
 @SuppressWarnings("serial")
 public class Robot 
 {
-	ArrayList <String> variables = new ArrayList <String> ();
+	//ArrayList <String> variables = new ArrayList <String> ();
+	HashMap<String, Integer> variables = new HashMap<>();
     ArrayList <String> funciones = new ArrayList <String> ();
  	ArrayList <String> funciones_parametros = new ArrayList <String> ();
 
@@ -161,21 +166,137 @@ TOKEN :
 }
 
 //PARSER
-void variable_definition() :
+void variable_definition() : //Funciona definicion y uso de variables
 {
-  Token variableName;
+  Token variableName=null;
+  Token numero=null;
 }
 {
-  < NEW > < VAR > variableName = < LETTERS > < NUM >
+    < NEW > < VAR > variableName = < LETTERS > < IGUAL > numero= < NUM >
   {
-    //variables.add(variableName.image);
-    System.out.println("Variable definida: " + variableName.image);
+    variables.put(variableName.image, Integer.parseInt(numero.image));
+    System.out.println("Variable " + variableName.image + " set to " + numero.image);
   }
+
 }
 
-	//boolean command(uniandes.lym.robot.view.Console sistema) :
-	
-	boolean command(Console sistema):
+void turn_To_My():
+{
+}
+{<TURNTOMY>  "("(
+			< RIGHT > { world.turnRight();salida = "Command: turn to my right ";}  
+	    | < BACK > { world.turnRight(); world.turnRight();salida = "Command: turn to my back ";}
+	    | < LEFT > { world.turnRight(); world.turnRight();world.turnRight();salida = "Command: turn to my left ";}
+	    ) ")"{ System.out.println(salida);}
+	    
+}
+
+void turn_To_The():
+{
+}
+{
+    <TURNTOTHE> "("
+    (
+        <NORTH> 
+        {
+            // Check if the robot is already facing north
+            if (world.facingNorth()) {
+                salida = "Already facing north, no need to turn.";
+            } else {
+                // Keep turning right until facing north
+                while (!world.facingNorth()) {
+                    world.turnRight();
+                    salida = "Turning right to face north...";
+                    System.out.println(salida);
+                }
+                salida = "Now facing north.";
+            }
+            System.out.println(salida);
+        }
+  | < SOUTH >
+  {
+            // Check if the robot is already facing north
+            if (world.facingSouth()) {
+                salida = "Already facing south, no need to turn.";
+            } else {
+                // Keep turning right until facing north
+                while (!world.facingSouth()) {
+                    world.turnRight();
+                    salida = "Turning right to face south...";
+                    System.out.println(salida);
+                }
+                salida = "Now facing south.";
+            }
+            System.out.println(salida);
+        }
+| < EAST >
+{
+            // Check if the robot is already facing north
+            if (world.facingEast()) {
+                salida = "Already facing east, no need to turn.";
+            } else {
+                // Keep turning right until facing north
+                while (!world.facingEast()) {
+                    world.turnRight();
+                    salida = "Turning right to face east...";
+                    System.out.println(salida);
+                }
+                salida = "Now facing east.";
+            }
+            System.out.println(salida);
+        } 
+|< WEST >
+{
+            // Check if the robot is already facing north
+            if (world.facingWest()) {
+                salida = "Already facing east, no need to turn.";
+            } else {
+                // Keep turning right until facing north
+                while (!world.facingEast()) {
+                    world.turnRight();
+                    salida = "Turning right to face east...";
+                    System.out.println(salida);
+                }
+                salida = "Now facing east.";
+            }
+            System.out.println(salida);
+        } 
+)
+    ")"
+}
+
+
+void caminar() : //Usar como base para comandos que puedan recibir numeros o variables
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <WALK> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        world.moveForward(x, false);  // Use the value (whether number or from variable)
+        salida = "Command: Moveforward " + x;
+        System.out.println(salida);
+    }
+}
+
+
+//Hacer un void con todos los ejecutables para determinar donde va el EXEC
+	boolean command(Console sistema): //Aqui toca meter todos los voids, y los exec donde toque
 	{	
 		
 		int x,y;
@@ -185,19 +306,17 @@ void variable_definition() :
 
 	
 	{
-		(		  (
-		   <WALK> "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward";}
-		| 	<TURNTOMY>  "("(
-			< RIGHT > { world.turnRight();salida = "Command: right ";}  
-	    | < BACK > { world.turnRight(); world.turnRight();salida = "Command: right ";} 
-		  ) ")"
+		(		 ( < EXEC >"{" caminar() "}"
+		| variable_definition()
+		| turn_To_My()
+		| turn_To_The()
 				 
 		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
 		|  <PUT> "("  put() ")"					  			
 		|  <PICK> "(" get()  ")"	
 	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}*/
-		) ";" 
+		) ";" //TOCA AGREGAR LOS VOIDS DENTRO DE UN BOOLEAN
 
 		{
 		    try {
