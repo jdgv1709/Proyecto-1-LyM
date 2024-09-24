@@ -87,6 +87,7 @@ TOKEN: {
   < RIGHT:"RIGHT" >
 | < LEFT:"LEFT" >
 | < BACK:"BACK" >
+| < FRONT:"FRONT">
 | < NORTH:"NORTH" >
 | < SOUTH:"SOUTH" >
 | < EAST:"EAST" >
@@ -116,7 +117,7 @@ TOKEN: /* Nombres de Comandos */
 TOKEN:
 {
 		<BALLOONS:  "myBALLOONS" >
-		| <CHIPS:  "mYCHIPS"  >
+		| <CHIPS:  "myCHIPS"  >
 		| <SIZE:"SIZE" >
 		| < MYX:"MYX" >
 		| < MYY:"MYY" >
@@ -316,7 +317,7 @@ void jump() :
     )
     ")" 
     {
-        world.moveForward(x, true);  // TODO: Averiguar como hacer el jump
+        world.moveForward(x, true); 
         salida = "Command: jump forward " + x;
         System.out.println(salida);
     }
@@ -398,7 +399,7 @@ void grab() :
     )
     ")" 
     {
-        {world.pickupBalloon(); salida = "Comando:  Grab " + x;} //TODO: COMO REPETIR UNA ACCION VARIAS VECES
+        {world.pickupBalloon(); salida = "Comando:  Grab " + x;}
         System.out.println(salida);
     }
 }
@@ -425,7 +426,7 @@ void letgo() :
     )
     ")" 
     {
-        {world.putBalloon(); salida = "Comando:  LetGo " + x;} //TODO: QUE SENTIDO TIENE PONER MAS DE UN BALLON??
+        {world.putBalloon(); salida = "Comando:  LetGo " + x;} 
         System.out.println(salida);
     }
 }
@@ -452,7 +453,7 @@ void pop() :
     )
     ")" 
     {
-        {world.popBalloon(); salida = "Comando:  POP " + x;} //TODO: QUE SENTIDO TIENE POPEAR MAS DE UN BALLON??
+        {world.popBalloon(); salida = "Comando:  POP " + x;} 
         System.out.println(salida);
     }
 }
@@ -503,7 +504,8 @@ void size():
 { int dim;
 }
 {
-    < SIZE > { dim=world.getN(); System.out.println(dim);} //TODO: Ver como se puede hacer que depende da ROBOTWORLD
+    < SIZE > { dim=world.getN(); System.out.println(dim);variables.put("siz", dim);
+    System.out.println("saved "+ dim+ " as variable: siz");} 
     
 }
 
@@ -511,18 +513,131 @@ void myx():
 {Point x;
 }
 {
-  < MYX > {x=world.getPosition();System.out.println(x.x); }
+  < MYX > {x=world.getPosition();System.out.println(x.x); variables.put("posx", x.x);
+  System.out.println("saved "+ x.x+ " as variable: posx");}
 }
 
 void myy():
 {Point y;
 }
 {
-  < MYY > {y=world.getPosition();System.out.println(y.y); }
+  < MYY > {y=world.getPosition();System.out.println(y.y); variables.put("posy", y.y);
+  System.out.println("saved "+ y.y+ " as variable: posy");}
 }
 
+void mychips():
+{int c;
+}
+{
+  <CHIPS > {c=world.getMyChips();System.out.println(c);variables.put("chip", c);
+  System.out.println("saved "+ c+ " as variable: chip");}
+}
 
-void sequence() :
+void myballoons():
+{
+  int g; }
+ {
+	<BALLOONS> {g=world.getMyBalloons();System.out.println(g);variables.put("bal", g);
+	System.out.println("saved "+ g+ " as variable: bal");}
+   }
+
+void balloonshere():
+{int b;
+}
+{
+  < BALLONSHERE >{b=world.countBalloons();System.out.println(b);variables.put("balhere", b);
+  System.out.println("saved "+ b+ " as variable: balhere");}
+}
+
+void chipshere():
+{boolean b;
+}
+{
+  < CHIPSHERE >{b=world.chipExists();int intValue = b ? 1 : 0; System.out.println(intValue);variables.put("chiphere", intValue);
+  System.out.println("saved "+ intValue+ " as variable: chiphere");}
+}
+
+void room():
+{int c;
+}
+{
+  <ROOM> {c=world.getMyChips();System.out.println(c);variables.put("rom", c);System.out.println("saved "+ c+ " as variable: rom");}
+}
+
+//Condiciones
+
+ /*void isblocked():
+{Token direction=null;
+}
+{< BLOCKED >"("
+    direction = face_direction() ")"
+  
+}
+
+Token face_direction() :
+{
+    Token t = null;
+}
+{
+    t = <RIGHT> { world.right(); } 
+    | <LEFT> { world.left(); }
+    | <BACK> { world.down(); } 
+    | <FRONT> { world.up(); }
+    { return t; } // Ensures that t is always returned
+}*/ //TODO: REVISAR COMO HACER ISBLOCKED QUE DEPENDE DE LA ORIENTACIÓN
+
+boolean isfacing():
+{boolean cond;
+}
+{
+    <FACING> "("
+    (
+        <NORTH> 
+        {cond=world.facingNorth();System.out.println(cond);}
+  | < SOUTH >
+  {cond=world.facingSouth();System.out.println(cond); }
+| < EAST >
+{cond=world.facingEast();System.out.println(cond); }
+|< WEST >
+{cond=world.facingWest();System.out.println(cond); }
+)
+    ")"
+    { return cond;}
+}
+
+boolean checkZero() :
+{
+    Token token = null;
+    int value = 0;
+}
+{
+    <ZERO> "("
+    (
+        token = <NUM>
+        {
+            // Convert the NUM token's value to an integer and assign it to value
+            value = Integer.parseInt(token.image);
+        }
+    |
+        token = <LETTERS>
+        {
+            // Look up the LETTERS token in the hashmap "variables"
+            if (variables.containsKey(token.image)) {
+                value = variables.get(token.image); // Get the value from the hashmap
+            } else {
+                System.out.println("Error: Variable " + token.image + " is not defined.");
+                // You can throw an exception here if necessary
+            }
+        }
+    )")"
+    {
+        // Check if the value is zero and return true or false
+        return value == 0;
+    }
+}
+//TODO: not condition
+
+void sequence() : //Ejecutables: usar para def funciones, repeat
 {
 }
 {
@@ -542,6 +657,11 @@ void sequence() :
 		| size()
 		| myx()
 		| myy()
+		| mychips()
+		| myballoons()
+		| balloonshere()
+		| chipshere()
+		| room()
   )+
 }
 
@@ -576,6 +696,13 @@ void sequence() :
 		| size()
 		| myx()
 		| myy()
+		| mychips()
+		| myballoons()
+		| balloonshere()
+		| chipshere()
+		| room()
+		| isfacing()
+		| checkZero()
 				 
 		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
