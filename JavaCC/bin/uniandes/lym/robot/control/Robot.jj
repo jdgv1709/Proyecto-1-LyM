@@ -249,15 +249,15 @@ void turn_To_The():
 {
             // Check if the robot is already facing north
             if (world.facingWest()) {
-                salida = "Already facing east, no need to turn.";
+                salida = "Already facing west, no need to turn.";
             } else {
                 // Keep turning right until facing north
-                while (!world.facingEast()) {
+                while (!world.facingWest()) {
                     world.turnRight();
-                    salida = "Turning right to face east...";
+                    salida = "Turning right to face west...";
                     System.out.println(salida);
                 }
-                salida = "Now facing east.";
+                salida = "Now facing west.";
             }
             System.out.println(salida);
         } 
@@ -294,6 +294,169 @@ void caminar() : //Usar como base para comandos que puedan recibir numeros o var
     }
 }
 
+void jump() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <JUMP> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        world.moveForward(x, false);  // TODO: Averiguar como hacer el jump
+        salida = "Command: jump forward " + x;
+        System.out.println(salida);
+    }
+}
+
+void drop() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <DROP> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        {world.putChips(x); salida = "Comando:  Drop " + x;} 
+        System.out.println(salida);
+    }
+}
+
+void pick() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <PICK> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        {world.pickupChip(); salida = "Comando:  Pick " + x;} 
+        System.out.println(salida);
+    }
+}
+
+void grab() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <GRAB> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        {world.pickupBalloon(); salida = "Comando:  Grab " + x;} //TODO: COMO REPETIR UNA ACCION VARIAS VECES
+        System.out.println(salida);
+    }
+}
+
+void letgo() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <LETGO> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        {world.putBalloon(); salida = "Comando:  LetGo " + x;} //TODO: QUE SENTIDO TIENE PONER MAS DE UN BALLON??
+        System.out.println(salida);
+    }
+}
+
+void pop() :
+{
+    int x;
+    Token varName;  // Token to store the variable name
+}
+{
+    <POP> "("
+    (
+        x = num()  // Accept a number
+    |
+        varName = <LETTERS>  // Accept a variable name
+        {
+            if (variables.containsKey(varName.image)) {
+                x = variables.get(varName.image);  // Retrieve the value from the HashMap
+            } else {
+                System.out.println("Error: Variable " + varName.image + " not defined.");
+                throw new ParseException();  // Throw an exception if the variable doesn't exist
+            }
+        }
+    )
+    ")" 
+    {
+        {world.popBalloon(); salida = "Comando:  POP " + x;} //TODO: QUE SENTIDO TIENE POPEAR MAS DE UN BALLON??
+        System.out.println(salida);
+    }
+}
+
 
 //Hacer un void con todos los ejecutables para determinar donde va el EXEC
 	boolean command(Console sistema): //Aqui toca meter todos los voids, y los exec donde toque
@@ -310,6 +473,12 @@ void caminar() : //Usar como base para comandos que puedan recibir numeros o var
 		| variable_definition()
 		| turn_To_My()
 		| turn_To_The()
+		| jump()
+		| drop()
+		| pick()
+		| grab()
+		| letgo()
+		| pop()
 				 
 		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
 		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
