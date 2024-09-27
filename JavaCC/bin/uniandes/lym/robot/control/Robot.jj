@@ -651,6 +651,32 @@ boolean not() :
     }
     
 }
+
+void repeat() :
+{
+    int repeatCount = 0;
+    Token variableName = null;
+}
+{
+    <REP> (
+        // First case: a constant number
+        <NUM> { 
+            repeatCount = Integer.parseInt(token.image); 
+        }
+    |   // Second case: a variable
+        <LETTERS> { 
+            variableName = token;
+            if (variables.containsKey(variableName.image)) {
+                repeatCount = variables.get(variableName.image); // Get the value from HashMap
+            } else {
+                System.out.println("Error: Variable " + variableName.image + " is not defined.");
+                throw new ParseException("Undefined variable: " + variableName.image);
+            }
+        }
+    )
+    <TIMES> sequence() < PER > // Now expecting a TIMES token
+    } 
+
 //TODO: eSTRUCTURAS DE CONTROL + FUNCIONES
 void sequence() : //Ejecutables: usar para def funciones, repeat
 {
@@ -677,26 +703,17 @@ void sequence() : //Ejecutables: usar para def funciones, repeat
 		| balloonshere()
 		| chipshere()
 		| room()
+		| repeat()
   )+
 }
 
 
-
-
-
-//Hacer un void con todos los ejecutables para determinar donde va el EXEC
-	boolean command(Console sistema): //Aqui toca meter todos los voids, y los exec donde toque
-	{	
-		
-		int x,y;
-		Token variableName=null;
-		salida=new String();	
-	}
-
-	
-	{
-		(		 ( < EXEC >"{" caminar() "}"
-		| variable_definition()
+void ejecutables():
+{
+}
+{
+  < EXEC > "{" (
+	(	  caminar()
 		| turn_To_My()
 		| turn_To_The()
 		| jump()
@@ -716,14 +733,52 @@ void sequence() : //Ejecutables: usar para def funciones, repeat
 		| balloonshere()
 		| chipshere()
 		| room()
+
+    )";")+ "}"
+}
+
+
+//Hacer un void con todos los ejecutables para determinar donde va el EXEC
+	boolean command(Console sistema): //Aqui toca meter todos los voids, y los exec donde toque
+	{	
+		
+		int x,y;
+		Token variableName=null;
+		salida=new String();	
+	}
+
+	
+	{
+		(		(
+		(		  
+		// < EXEC >"{" caminar() "}"
+		variable_definition()
+		/*| turn_To_My()
+		| turn_To_The()
+		| jump()
+		| drop()
+		| pick()
+		| grab()
+		| letgo()
+		| pop()
+		| < NOP >
+		| moves()
+		| safeexe()
+		| size()
+		| myx()
+		| myy()
+		| mychips()
+		| myballoons()
+		| balloonshere()
+		| chipshere()
+		| room()
+		*/
+ 		| ejecutables()
 		| not()
+		| repeat()
 				 
-		/*| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
-		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
-		|  <PUT> "("  put() ")"					  			
-		|  <PICK> "(" get()  ")"	
-	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}*/
-		) ";" //TOCA AGREGAR LOS VOIDS DENTRO DE UN BOOLEAN
+
+		) //TOCA AGREGAR LOS VOIDS DENTRO DE UN BOOLEAN
 
 		{
 		    try {
@@ -736,7 +791,7 @@ void sequence() : //Ejecutables: usar para def funciones, repeat
 			return true;
 		})+
 
-    	| <EOF> {return false;} 
+    	| <EOF> {return false;}) 
 	}
 
 
